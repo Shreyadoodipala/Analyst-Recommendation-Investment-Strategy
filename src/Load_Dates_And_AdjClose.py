@@ -1,14 +1,17 @@
-import os
 from google.cloud import bigquery
-import pandas_gbq
 import pandas as pd
 import numpy as np
 import yfinance as yf
+import sys
+from pathlib import Path
 
-from config import PROJECT_ID, DATASET_ID, REC_TABLE_ID, STOCKS_BENCHMARK_MERGED_TABLE_ID
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.append(str(PROJECT_ROOT))
 
-def generate_ticker_date_ranges(file_path = "data/ticker_date_ranges.csv"):
-    if os.path.exists(file_path):
+from config import PROJECT_ID, DATASET_ID, REC_TABLE_ID
+
+def generate_ticker_date_ranges(file_path = PROJECT_ROOT / "data" / "processed" / "ticker_date_ranges.csv") -> pd.DataFrame:
+    if file_path.exists():
         dates_df = pd.read_csv(file_path, parse_dates=["min_date", "max_date"])
         return dates_df
 
@@ -21,12 +24,12 @@ def generate_ticker_date_ranges(file_path = "data/ticker_date_ranges.csv"):
     client = bigquery.Client(project=PROJECT_ID)
     dates_df = client.query(dates_query).to_dataframe()
 
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    Path(file_path).parent.mkdir(parents=True, exist_ok=True)
     dates_df.to_csv(file_path, index=False)
     return dates_df
 
 
-def download_prices(dates_df, file_path = "data/adj_close_prices.csv"):
+def download_prices(dates_df, file_path = PROJECT_ROOT / "data" / "raw" / "adj_close_prices.csv"):
     dates_df = dates_df.copy()
     # Ensure date columns are always datetime, even when loaded as strings from CSV.
     dates_df["min_date"] = pd.to_datetime(dates_df["min_date"], errors="coerce")
@@ -74,11 +77,11 @@ def download_prices(dates_df, file_path = "data/adj_close_prices.csv"):
         df_prices = pd.concat([df_prices, data], ignore_index=True)
 
     # Save the final DataFrame to a CSV file
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    Path(file_path).parent.mkdir(parents=True, exist_ok=True)
     df_prices.to_csv(file_path, index=False)
 
 
-def download_benchmark_data(dates_df, benchmark_ticker="QQQ", file_path = "data/benchmark_data.csv"):
+def download_benchmark_data(dates_df, benchmark_ticker = "QQQ", file_path = PROJECT_ROOT / "data" / "raw" / "benchmark_data.csv"):
     min_date = (pd.to_datetime(dates_df["min_date"].min()) + pd.Timedelta(days=-366-2)).strftime("%Y-%m-%d")
     max_date = (pd.to_datetime(dates_df["max_date"].max()) + pd.Timedelta(days=60)).strftime("%Y-%m-%d")
     benchmark = yf.download(benchmark_ticker, start=min_date, end=max_date, auto_adjust=False, progress=False, multi_level_index=False)
@@ -87,27 +90,18 @@ def download_benchmark_data(dates_df, benchmark_ticker="QQQ", file_path = "data/
     benchmark_prices["Mkt_Log_Returns"] = np.log(benchmark_prices["Mkt_Adj_Close"] / benchmark_prices["Mkt_Adj_Close"].shift(1))
 
     benchmark_prices = benchmark_prices[["Date", "Mkt_Adj_Close", "Mkt_Log_Returns"]]
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    Path(file_path).parent.mkdir(parents=True, exist_ok=True)
     benchmark_prices.to_csv(file_path, index=False)
 
-def build_merged_prices(prices_path="data/adj_close_prices.csv", benchmark_path="data/benchmark_data.csv", file_path="data/prices_with_benchmark.csv"):
+def build_merged_prices(prices_path = PROJECT_ROOT / "data" / "raw" / "adj_close_prices.csv", benchmark_path = PROJECT_ROOT / "data" / "raw" / "benchmark_data.csv", file_path = PROJECT_ROOT / "data" / "processed" / "prices_with_benchmark.csv"):
     prices = pd.read_csv(prices_path, parse_dates=["Date"])
     benchmark = pd.read_csv(benchmark_path, parse_dates=["Date"])
 
     merged = prices.merge(benchmark, on="Date", how="left")
     merged = merged.sort_values(["Ticker", "Date"]).reset_index(drop=True)
 
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    Path(file_path).parent.mkdir(parents=True, exist_ok=True)
     merged.to_csv(file_path, index=False)
-    
-    # Save the merged DataFrame to BigQuery
-    pandas_gbq.to_gbq(
-        merged,
-        destination_table=f"{DATASET_ID}.{STOCKS_BENCHMARK_MERGED_TABLE_ID}",
-        project_id=PROJECT_ID,
-        if_exists="replace"
-    )
-    print(f"✓ Merged prices and benchmark data written to {PROJECT_ID}.{DATASET_ID}.{STOCKS_BENCHMARK_MERGED_TABLE_ID}")
 
 
 if __name__ == "__main__":

@@ -1,11 +1,18 @@
 import numpy as np
 import pandas as pd
 import requests
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.append(str(PROJECT_ROOT))
+
 from config import FRED_API_KEY
 
-def load_risk_free_rates(series_id: str = "DTB4WK", start_date: str = "2020-01-01", end_date: str = "2026-03-31", file_path = "data/4_week_tbills_filled.csv") -> pd.DataFrame:
+def load_risk_free_rates(series_id: str = "DTB4WK", start_date: str = "2020-01-01", end_date: str = "2026-03-31", file_path = PROJECT_ROOT / "data" / "raw" / "4_week_tbills_filled.csv") -> pd.DataFrame:
     """Load risk-free rates from FRED API and save to a CSV file."""
 
+    # 1. Set up the API request to FRED
     url = "https://api.stlouisfed.org/fred/series/observations"
     params = {
         "series_id": series_id,
@@ -15,6 +22,7 @@ def load_risk_free_rates(series_id: str = "DTB4WK", start_date: str = "2020-01-0
         "observation_end": end_date,
     }
 
+    # 2. Make the API request
     response = requests.get(url, params=params)
 
     if response.status_code == 200:
@@ -37,4 +45,4 @@ def load_risk_free_rates(series_id: str = "DTB4WK", start_date: str = "2020-01-0
         print(f"Success! Forward-filled data saved to {file_path}")
 
     else:
-        print(f"Error: {response.status_code}\n{response.text}")
+        print(f"Error: {response.status_code}: {response.text}")

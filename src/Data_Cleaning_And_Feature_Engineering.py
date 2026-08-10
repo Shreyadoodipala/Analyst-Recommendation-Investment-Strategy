@@ -1,5 +1,10 @@
 from google.cloud import bigquery
-import os
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.append(str(PROJECT_ROOT))
+
 from config import PROJECT_ID, DATASET_ID, REC_TABLE_ID, ORIGINAL_TABLE
 
 # Stage 2: Clean the data
@@ -7,7 +12,7 @@ def data_cleaning():
     print("▶ Stage 2: Cleaning Data...")
 
     # Read the SQL cleaning script
-    sql_path = os.path.join(os.path.dirname(__file__), "clean_ratings_PTs.sql")
+    sql_path = PROJECT_ROOT / "sql" / "clean_ratings_PTs.sql"
     with open(sql_path, "r", encoding='utf-8') as f:
         template = f.read()
 
@@ -33,7 +38,7 @@ def standardize_ratings():
     print("▶ Stage 3: Standardizing Ratings...")
 
     # Read the SQL standardization script
-    sql_path = os.path.join(os.path.dirname(__file__), "standardize_ratings.sql")
+    sql_path = PROJECT_ROOT / "sql" / "standardize_ratings.sql"
     with open(sql_path, "r", encoding='utf-8') as f:
         template = f.read()
 
@@ -57,7 +62,7 @@ def standardize_ratings():
 def add_rec_type():
     print("▶ Stage 4: Adding Recommendation Type...")
 
-    sql_path = os.path.join(os.path.dirname(__file__), "recommendation_type.sql")
+    sql_path = PROJECT_ROOT / "sql" / "recommendation_type.sql"
     with open(sql_path, 'r', encoding='utf-8') as f:
         template = f.read()
  

@@ -1,4 +1,10 @@
 import pandas_gbq
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.append(str(PROJECT_ROOT))
+
 from config import PROJECT_ID, DATASET_ID, REC_TABLE_ID, ORIGINAL_DATASET, ORIGINAL_TABLE
 
 
@@ -19,8 +25,8 @@ def data_retrieval():
     # This reads the data directly into computer's local memory
     df = pandas_gbq.read_gbq(query, project_id=PROJECT_ID)
 
-    print(f"Successfully retrieved {len(df)} records. Writing to your database...")
-    # Write the dataframe back up into your new writable dataset
+    print(f"Successfully retrieved {len(df)} records. Writing to database...")
+    # Write the dataframe back up into the new writable dataset
     pandas_gbq.to_gbq(
         df, 
         destination_table=f"{DATASET_ID}.{REC_TABLE_ID}", 
@@ -28,7 +34,7 @@ def data_retrieval():
         if_exists="replace"
     )
 
-    print(f"  Written to {PROJECT_ID}.{DATASET_ID}.{REC_TABLE_ID}")
+    print(f"Written to {PROJECT_ID}.{DATASET_ID}.{REC_TABLE_ID}")
 
 
 # ── Run pipeline ──────────────────────────────────────────────────────────────
