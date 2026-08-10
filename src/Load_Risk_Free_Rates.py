@@ -42,7 +42,26 @@ def load_risk_free_rates(series_id: str = "DTB4WK", start_date: str = "2020-01-0
 
         # 4. Save to CSV
         df.to_csv(file_path, index=False)
-        print(f"Success! Forward-filled data saved to {file_path}")
+        print(f"Forward-filled data saved to {file_path}")
 
     else:
         print(f"Error: {response.status_code}: {response.text}")
+
+def convert_to_daily_rate(file_path = PROJECT_ROOT / "data" / "raw" / "4_week_tbills_filled.csv", output_path = PROJECT_ROOT / "data" / "processed" / "risk_free_rate.csv"):
+    """Convert the 4-week T-bill rate to a daily rate and save to a CSV file."""
+
+    # Load the filled T-bill rates
+    if not file_path.exists():
+        load_risk_free_rates(file_path=file_path)
+
+    df = pd.read_csv(file_path, parse_dates=["Date"])
+
+    # Convert the annualized 4-week T-bill rate to a daily rate
+    d = df["4_Week_T_Bill_Rate"] / 100      # Convert percentage to decimal
+    t = 28 / 360
+    r_28 = (d * t) / (1 - d * t)
+    df["Daily_rf"] = (1 + r_28) ** (1 / 28) - 1
+
+    # Save the daily risk-free rates to a new CSV file
+    df.to_csv(output_path, index=False)
+    print(f"Daily risk-free rates saved to {output_path}")
