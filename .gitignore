@@ -8,3 +8,9 @@ __pycache__/
 # Ignore virtual environment directories
 venv/
 .vscode/
+
+# Ignore trial notebooks and their outputs
+src/trial_notebooks/
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
