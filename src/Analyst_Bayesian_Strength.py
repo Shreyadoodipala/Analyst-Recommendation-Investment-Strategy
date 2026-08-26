@@ -1,6 +1,41 @@
 import numpy as np
 import pandas as pd
 
+def encode_signal(df: pd.DataFrame, method: str) -> pd.DataFrame:
+    rec = df['Recommendation_Type']
+    rating = df['Numeric_Rating_After']
+
+    if method == 'default':
+        conditions = [
+            rec.isin(['Upgrade', 'Reprice Up']),
+            rec.isin(['Downgrade', 'Reprice Down']),
+            rec == 'PT Raise',
+            rec == 'PT Cut',
+            (rec == 'Initiation') & (rating > 0),
+            (rec == 'Initiation') & (rating < 0),
+        ]
+        choices = [1, -1, 0.5, -0.5, 1, -1]
+
+    elif method == 'shadow_sell':
+        conditions = [
+            rec.isin(['Upgrade', 'Reprice Up']),
+            rec.isin(['Downgrade', 'Reprice Down']),
+            rec == 'PT Raise',
+            rec == 'PT Cut',
+            (rec == 'Initiation') & (rating > 0),
+            (rec == 'Initiation') & (rating < 0),
+            (rec == 'Initiation') & (rating == 0),
+        ]
+        choices = [1, -1, 0.5, -0.5, 1, -1, -0.25]
+
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
+    signal_series = pd.Series(np.select(conditions, choices, default=0), index=df.index)
+    df['Signal'] = signal_series
+
+    return df
+
 # Helper functions to compute returns
 def _add_rolling_beta(group: pd.DataFrame, window: int) -> pd.Series:
     """
