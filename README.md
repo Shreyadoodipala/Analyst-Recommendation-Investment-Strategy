@@ -1,1 +1,12 @@
-# Analyst-Recommendation-Investment-Strategy
+# Analyst Recommendation Bayesian Strategy Alpha Research
+
+Equity analysts occupy a critical position in modern financial markets, serving as intermediaries between complex corporate information and actionable investment decisions. Through their stock recommendations, rating revisions, and price target updates, analysts collectively influence capital allocation across institutional and retail portfolios. 
+Yet despite their market influence, the predictive value of individual analyst recommendations remains heterogeneous, some analysts consistently move markets while others contribute little beyond noise.
+
+## Literature Review - Primary Source
+Source: [The Predictive Power of Analysts and Their Impact on Prices](https://doi.org/10.2139/ssrn.3973080)  
+This paper investigates the predictive power of sell-side analyst recommendations and their impact on stock prices using the I/B/E/S database from Refinitiv, decomposing post-recommendation price behavior into two distinct components: an Impact window spanning the day before to the day after the recommendation, and a Drift window covering day +1 to day +20.  
+Applying this decomposition across three eight-year periods from 1994 to 2020, they document a structural shift whereby the Impact component has strengthened over time while the Drift component has steadily shrunk, attributing this to arbitrage dynamics that have compressed post-recommendation return predictability into the immediate announcement window.  
+Their central methodological contribution is a Bayesian ridge
+regression model that estimates a latent strength parameter for each analyst, regularizing estimates toward zero for analysts with limited recommendation histories to avoid overfitting on small samples. The framework distinguishes between impactful analysts whose recommendations are immediately priced in by the market, leaving no exploitable residual and underestimated analysts, whose recommendations generate persistent post-announcement drift approximately twice that of weaker analysts out of sample.  
+The authors conclude that naive upgrade-downgrade strategies are barely profitable after costs in recent years and that selectively targeting underestimated analysts represents a more viable systematic approach.
