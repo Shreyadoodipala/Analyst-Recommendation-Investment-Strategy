@@ -11,6 +11,9 @@ from config import FRED_API_KEY
 
 def load_risk_free_rates(series_id: str = "DTB4WK", start_date: str = "2020-01-01", end_date: str = "2026-03-31", file_path = PROJECT_ROOT / "data" / "raw" / "4_week_tbills_filled.csv") -> pd.DataFrame:
     """Load risk-free rates from FRED API and save to a CSV file."""
+    if file_path.exists():
+        print(f"File {file_path} already exists. Loading from CSV.")
+        return
 
     # 1. Set up the API request to FRED
     url = "https://api.stlouisfed.org/fred/series/observations"
@@ -53,6 +56,10 @@ def convert_to_daily_rate(file_path = PROJECT_ROOT / "data" / "raw" / "4_week_tb
     # Load the filled T-bill rates
     if not file_path.exists():
         load_risk_free_rates(file_path=file_path)
+
+    if output_path.exists():
+        print(f"File {output_path} already exists. Loading from CSV.")
+        return
 
     df = pd.read_csv(file_path, parse_dates=["Date"])
 

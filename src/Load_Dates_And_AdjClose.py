@@ -30,6 +30,10 @@ def generate_ticker_date_ranges(file_path = PROJECT_ROOT / "data" / "processed" 
 
 
 def download_prices(dates_df, file_path = PROJECT_ROOT / "data" / "raw" / "adj_close_prices.csv"):
+    if file_path.exists():
+        print(f"File {file_path} already exists. Loading from CSV.")
+        return
+    
     dates_df = dates_df.copy()
     # Ensure date columns are always datetime, even when loaded as strings from CSV.
     dates_df["min_date"] = pd.to_datetime(dates_df["min_date"], errors="coerce")
@@ -79,9 +83,14 @@ def download_prices(dates_df, file_path = PROJECT_ROOT / "data" / "raw" / "adj_c
     # Save the final DataFrame to a CSV file
     Path(file_path).parent.mkdir(parents=True, exist_ok=True)
     df_prices.to_csv(file_path, index=False)
+    print(f"Downloaded prices saved to {file_path}")
 
 
 def download_benchmark_data(dates_df, benchmark_ticker = "QQQ", file_path = PROJECT_ROOT / "data" / "raw" / "benchmark_data.csv"):
+    if file_path.exists():
+        print(f"File {file_path} already exists. Loading from CSV.")
+        return
+    
     min_date = (pd.to_datetime(dates_df["min_date"].min()) + pd.Timedelta(days=-366-2)).strftime("%Y-%m-%d")
     max_date = (pd.to_datetime(dates_df["max_date"].max()) + pd.Timedelta(days=60)).strftime("%Y-%m-%d")
     benchmark = yf.download(benchmark_ticker, start=min_date, end=max_date, auto_adjust=False, progress=False, multi_level_index=False)
@@ -92,8 +101,13 @@ def download_benchmark_data(dates_df, benchmark_ticker = "QQQ", file_path = PROJ
     benchmark_prices = benchmark_prices[["Date", "Mkt_Adj_Close", "Mkt_Log_Returns"]]
     Path(file_path).parent.mkdir(parents=True, exist_ok=True)
     benchmark_prices.to_csv(file_path, index=False)
+    print(f"Downloaded benchmark data saved to {file_path}")
 
 def build_merged_prices(prices_path = PROJECT_ROOT / "data" / "raw" / "adj_close_prices.csv", benchmark_path = PROJECT_ROOT / "data" / "raw" / "benchmark_data.csv", file_path = PROJECT_ROOT / "data" / "processed" / "prices_with_benchmark.csv"):
+    if file_path.exists():
+        print(f"File {file_path} already exists. Loading from CSV.")
+        return
+
     prices = pd.read_csv(prices_path, parse_dates=["Date"])
     benchmark = pd.read_csv(benchmark_path, parse_dates=["Date"])
 
@@ -102,6 +116,7 @@ def build_merged_prices(prices_path = PROJECT_ROOT / "data" / "raw" / "adj_close
 
     Path(file_path).parent.mkdir(parents=True, exist_ok=True)
     merged.to_csv(file_path, index=False)
+    print(f"Merged prices with benchmark saved to {file_path}")
 
 
 if __name__ == "__main__":
