@@ -58,7 +58,7 @@ rf_df = pd.read_csv(PROJECT_ROOT / 'data' / 'processed' / 'risk_free_rate.csv')
 rf = rf_df.set_index('Date')['Daily_rf']
 
 # Backtest Strategy variations with grid search
-drift_days = (21, 29, 45)
+drift_days = (21, 29, 45)   # top 3 chosen from running Drift_Days.py
 sigma_prior = (0.02, 0.05, 0.1, 0.2, 0.3)
 
 grid_search_results = pb.run_grid_search(train_df, train_prices_df, test_df, test_prices_df,
