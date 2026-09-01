@@ -68,6 +68,16 @@ grid_search_results = pb.run_grid_search(train_df, train_prices_df, test_df, tes
     n_jobs=-1, verbose=10)
 grid_search_results.to_csv(PROJECT_ROOT / "outputs" / "grid_search_results.csv", index=False)
 
+# Results with transaction costs
+transaction_cost_bps = 10.0
+grid_search_results_with_costs = pb.run_grid_search(train_df, train_prices_df, test_df, test_prices_df,
+    benchmark_returns, rf, drift_days, sigma_prior,
+    signal_variations=("default", "shadow_sell"),
+    pos_sizings=("equal", "signal_weight"),
+    transaction_cost_bps=transaction_cost_bps,
+    n_jobs=-1, verbose=10)
+grid_search_results_with_costs.to_csv(PROJECT_ROOT / "outputs" / "grid_search_results_with_costs.csv", index=False)
+
 # Correlation heatmap of grid search results
 grid_res_encoded = grid_search_results.copy()
 grid_res_encoded['signal_method'] = grid_res_encoded['signal_method'].map({'default': 1, 'shadow_sell': 0})
@@ -81,3 +91,17 @@ mask = np.triu(np.ones_like(corr, dtype=bool))
 plt.figure(figsize=(20, 10))
 sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".3f", mask=mask)
 plt.savefig(PROJECT_ROOT / "outputs" / "grid_search_correlation_heatmap.png", bbox_inches='tight')
+
+# Correlation heatmap of grid search results
+grid_res_encoded = grid_search_results_with_costs.copy()
+grid_res_encoded['signal_method'] = grid_res_encoded['signal_method'].map({'default': 1, 'shadow_sell': 0})
+grid_res_encoded['position_sizing'] = grid_res_encoded['position_sizing'].map({'equal': 1, 'signal_weight': 0})
+
+# Drop columns that are highly correlated or not needed to simplify correlation analysis
+grid_res_encoded.drop(columns=['sortino', 'alpha_p', 'beta_p', 'sharpe_ci_low', 'sharpe_ci_high'], inplace=True)
+corr = grid_res_encoded.corr()
+mask = np.triu(np.ones_like(corr, dtype=bool))
+
+plt.figure(figsize=(20, 10))
+sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".3f", mask=mask)
+plt.savefig(PROJECT_ROOT / "outputs" / "grid_search_with_costs_correlation_heatmap.png", bbox_inches='tight')

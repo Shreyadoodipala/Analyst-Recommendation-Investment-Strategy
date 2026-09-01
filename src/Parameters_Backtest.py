@@ -61,6 +61,7 @@ def run_sigma_task(
     benchmark_returns,
     rf,
     pos_sizings,
+    transaction_cost_bps = 0.0
 ):
     """
     One unit of parallel work: everything downstream of a given
@@ -90,6 +91,11 @@ def run_sigma_task(
         trade_returns.name = "trade_return"
         positions = strat.get_daily_positions(trades_df, test_prices_df)
         daily_portfolio_returns = strat.mark_to_market(positions, test_prices_df)
+
+        if transaction_cost_bps > 0:
+            daily_portfolio_returns = bt.apply_transaction_costs(
+                daily_portfolio_returns, positions, test_prices_df, cost_bps=transaction_cost_bps
+            )
 
         sharpe, sortino = bt.sharpe_sortino_ratios(daily_portfolio_returns, rf)
         point, lower, upper = bt.bootstrap_sharpe_ci(daily_portfolio_returns, rf)
@@ -134,6 +140,7 @@ def run_grid_search(
     sigma_prior,
     signal_variations=("default", "shadow_sell"),
     pos_sizings=("equal", "signal_weight"),
+    transaction_cost_bps=0.0,
     n_jobs=-1,
     verbose=10,
 ):
@@ -155,7 +162,8 @@ def run_grid_search(
             test_prices_df,
             benchmark_returns,
             rf,
-            pos_sizings
+            pos_sizings,
+            transaction_cost_bps,
         )
         for signal_method, d, sigma in tasks
     )
