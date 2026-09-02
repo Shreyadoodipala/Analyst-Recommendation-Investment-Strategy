@@ -3,6 +3,8 @@
 Equity analysts occupy a critical position in modern financial markets, serving as intermediaries between complex corporate information and actionable investment decisions. Through their stock recommendations, rating revisions, and price target updates, analysts collectively influence capital allocation across institutional and retail portfolios. 
 Yet despite their market influence, the predictive value of individual analyst recommendations remains heterogeneous, some analysts consistently move markets while others contribute little beyond noise.
 
+---
+
 ## Literature Review - Primary Source
 Source: [The Predictive Power of Analysts and Their Impact on Prices](https://doi.org/10.2139/ssrn.3973080)  
 This paper investigates the predictive power of sell-side analyst recommendations and their impact on stock prices using the I/B/E/S database from Refinitiv, decomposing post-recommendation price behavior into two distinct components: an Impact window spanning the day before to the day after the recommendation, and a Drift window covering day +1 to day +20.  
@@ -10,3 +12,19 @@ Applying this decomposition across three eight-year periods from 1994 to 2020, t
 Their central methodological contribution is a Bayesian ridge
 regression model that estimates a latent strength parameter for each analyst, regularizing estimates toward zero for analysts with limited recommendation histories to avoid overfitting on small samples. The framework distinguishes between impactful analysts whose recommendations are immediately priced in by the market, leaving no exploitable residual and underestimated analysts, whose recommendations generate persistent post-announcement drift approximately twice that of weaker analysts out of sample.  
 The authors conclude that naive upgrade-downgrade strategies are barely profitable after costs in recent years and that selectively targeting underestimated analysts represents a more viable systematic approach.
+
+---
+
+## Objective
+
+This project tests whether analyst recommendation changes contain economically useful predictive content when translated into a systematic equity strategy. The core idea follows the Bayesian analyst-strength framework introduced in the literature on sell-side analyst recommendations: analysts differ in skill, and the market tends to underreact to the recommendations of certain analysts whose signals generate persistent post-event drift.
+
+The strategy therefore does three things:
+
+- converts raw analyst rating and price target changes into a directional investment signal
+- measures the market impact and subsequent drift of each recommendation event relative to the stock's own idiosyncratic return profile
+- estimates each analyst's latent forecasting strength using a Bayesian shrinkage approach and only trades recommendations from analysts with strong positive drift signal.
+
+The implementation is designed to be fully reproducible and is evaluated using a train/test split, a benchmark-adjusted return analysis, and a grid search over the key modeling choices.
+
+---
