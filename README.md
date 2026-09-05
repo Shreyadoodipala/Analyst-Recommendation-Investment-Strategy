@@ -28,3 +28,15 @@ The strategy therefore does three things:
 The implementation is designed to be fully reproducible and is evaluated using a train/test split, a benchmark-adjusted return analysis, and a grid search over the key modeling choices.
 
 ---
+
+## Methodology and Results
+[Link to Methodology.md](Methodology.md)
+[Link to Observations and Results](Results/Results.md)
+
+## Limitations
+Some caveats to consider:
+
+- buy/sell signals depend on event timing assumptions and the availability of trading dates
+- analyst coverage is uneven across stocks
+- price data and event data may suffer from survivorship or coverage gaps
+- transaction cost assumptions are approximate and may vary materially in practice
