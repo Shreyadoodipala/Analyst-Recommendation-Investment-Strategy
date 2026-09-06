@@ -4,7 +4,7 @@
 The analysis combines analyst-level recommendation data with daily equity and benchmark price data.
 
 ### 1.1 Analyst recommendation data
-The raw recommendation table from Anachart contains fields such as:
+The raw recommendation table contains fields such as:
 - Date
 - Company_Name and Ticker
 - Broker
