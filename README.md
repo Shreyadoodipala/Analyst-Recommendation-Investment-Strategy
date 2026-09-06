@@ -30,7 +30,7 @@ The implementation is designed to be fully reproducible and is evaluated using a
 ---
 
 ## Methodology and Results
-[Link to Methodology.md](Methodology.md)
+[Link to Methodology](Methodology.md)  
 [Link to Observations and Results](Results/Results.md)
 
 ## Limitations
